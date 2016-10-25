@@ -12,6 +12,8 @@ let
 
   gcc-cross = crossPkgs.gccCrossStageStatic;
 
+  newlib = crossPkgs.callPackage (import ./newlib.nix) { config = cross.config; };
+
   haskellPackages = pkgs.haskell.packages.ghc801.override {
     overrides = self: super:
       let # A function to override the attributes passed to mkDerivation
@@ -54,6 +56,7 @@ pkgs.stdenv.mkDerivation rec {
     gcc-cross
     binutils-cross
     ghcEnv
+    newlib
   ];
 
   buildPhase = ''
