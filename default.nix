@@ -19,7 +19,7 @@ let
 
   gcc-cross = crossPkgs.gccCrossStageStatic;
 
-  newlibCross = pkgs.callPackage ./newlib.nix { config = cross.config; };
+  newlibCross = crossPkgs.forceNativeDrv (crossPkgs.callPackage ./newlib.nix { config = cross.config; });
 
   haskellPackages = pkgs.haskell.packages.ghc801.override {
     overrides = self: super:
