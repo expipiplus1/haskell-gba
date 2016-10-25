@@ -10,7 +10,15 @@ let
     crossSystem = cross;
     config = {
       packageOverrides = pkgs: {
-        libcCross = newlibCross;
+        libcCross = pkgs.forceNativeDrv (pkgs.callPackage ./newlib.nix { config = cross.config; });
+        libiconv = pkgs.libiconv.overrideDerivation (attrs: {
+          patchPhase = ''
+            patch -p0 < ${(pkgs.fetchurl {
+              url = "https://gist.githubusercontent.com/paulczar/5493708/raw/b8e40037af5c882b3395372093b78c42d6a7c06e/gistfile1.txt";
+              sha256 = "09v25kc9sqpkm3y82c411f3l4mb252frgpavrcyr9bi3hlwirwk3";
+            })}
+          '';
+        });
       };
     };
   };
@@ -18,8 +26,6 @@ let
   binutils-cross = crossPkgs.binutilsCross;
 
   gcc-cross = crossPkgs.gccCrossStageStatic;
-
-  newlibCross = crossPkgs.forceNativeDrv (crossPkgs.callPackage ./newlib.nix { config = cross.config; });
 
   haskellPackages = pkgs.haskell.packages.ghc801.override {
     overrides = self: super:
