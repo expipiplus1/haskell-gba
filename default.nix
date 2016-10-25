@@ -3,16 +3,23 @@
 let
   cross = {
     config = "arm-none-eabi";
-    libc = null;
+    libc = "newlib";
   };
 
-  crossPkgs = import <nixpkgs> { crossSystem = cross; };
+  crossPkgs = import <nixpkgs> {
+    crossSystem = cross;
+    config = {
+      packageOverrides = pkgs: {
+        libcCross = newlibCross;
+      };
+    };
+  };
 
   binutils-cross = crossPkgs.binutilsCross;
 
   gcc-cross = crossPkgs.gccCrossStageStatic;
 
-  newlib = crossPkgs.callPackage (import ./newlib.nix) { config = cross.config; };
+  newlibCross = pkgs.callPackage ./newlib.nix { config = cross.config; };
 
   haskellPackages = pkgs.haskell.packages.ghc801.override {
     overrides = self: super:
@@ -56,7 +63,7 @@ pkgs.stdenv.mkDerivation rec {
     gcc-cross
     binutils-cross
     ghcEnv
-    newlib
+    crossPkgs.gcc
   ];
 
   buildPhase = ''
