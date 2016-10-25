@@ -12,8 +12,34 @@ let
 
   gcc-cross = crossPkgs.gccCrossStageStatic;
 
-  ghcEnv = pkgs.haskell.packages.ghc801.ghcWithPackages (p: with p; [
+  haskellPackages = pkgs.haskell.packages.ghc801.override {
+    overrides = self: super:
+      let # A function to override the attributes passed to mkDerivation
+          overrideAttrs = package: newAttrs: package.override (args: args // {
+            mkDerivation = expr: args.mkDerivation (expr // newAttrs);
+          });
+          ivorySrc = pkgs.fetchFromGitHub{
+            owner = "GaloisInc";
+            repo = "ivory";
+            rev = "79c37938d656250ac15799803f1d59bf9719485e";
+            sha256 = "18kxg90zhzwd1mh37risbcwpini13gvajlrx3byhqadhsaxwy34j";
+          };
+      in { ivory = overrideAttrs super.ivory {
+             src = ivorySrc + "/ivory";
+           };
+           ivory-opts = overrideAttrs super.ivory-opts {
+             src = ivorySrc + "/ivory-opts";
+           };
+           ivory-backend-c = overrideAttrs super.ivory-backend-c {
+             src = ivorySrc + "/ivory-backend-c";
+           };
+         };
+  };
+
+  ghcEnv = haskellPackages.ghcWithPackages (p: with p; [
     shake
+    ivory
+    ion
   ]);
 in
 
